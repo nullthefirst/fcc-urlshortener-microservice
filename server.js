@@ -29,10 +29,11 @@ app.post('/api/shorturl', function (req, res) {
   function isValidURL(string) {
     // https://stackoverflow.com/a/49849482/10123365
     var res = string.match(
-      /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g,
+      /^((https?|ftp|smtp):\/\/)?(www.)?[a-z0-9]+(\.[a-z]{2,}){1,3}(#?\/?[a-zA-Z0-9#]+)*\/?(\?[a-zA-Z0-9-_]+=[a-zA-Z0-9-%]+&?)?$/,
     );
     return res !== null;
   }
+
   const postInput = req.body.url;
 
   if (isValidURL(postInput)) {
