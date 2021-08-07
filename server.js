@@ -2,19 +2,51 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const app = express();
+const mongoose = require('mongoose');
+
+// Database Setup
+const mongo_uri = process.env.MONGO_URI;
+
+mongoose.connect(mongo_uri, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  dbName: process.env.MONGO_DBNAME,
+});
+
+const db = mongoose.connection;
+
+if (!db) {
+  console.log('Error connecting to MongoDB');
+} else {
+  console.log('Succcessfully connected MongoDB');
+}
+
+// MongoDB Schema Definition
+
+const ShortenedUrlSchema = new mongoose.Schema({
+  original_url: {
+    type: String,
+    required: true,
+  },
+  short_url: {
+    type: Number,
+    default: 1,
+  },
+});
+
+const ShortenedUrl = mongoose.model('ShortenedUrl', ShortenedUrlSchema);
 
 // Basic Configuration
 const port = process.env.PORT || 3000;
 
 app.use(cors());
-
 app.use('/public', express.static(`${process.cwd()}/public`));
 
-// extra middleware
-app.use(express.urlencoded());
+// Extra Middleware
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// routes
+// Routes
 app.get('/', function (req, res) {
   res.sendFile(process.cwd() + '/views/index.html');
 });
@@ -24,8 +56,8 @@ app.get('/api/hello', function (req, res) {
   res.json({ greeting: 'hello API' });
 });
 
-// solutions
-app.post('/api/shorturl', function (req, res) {
+// Solutions
+app.post('/api/shorturl', async function (req, res) {
   function isValidURL(string) {
     // https://stackoverflow.com/a/49849482/10123365
     var res = string.match(
@@ -37,7 +69,44 @@ app.post('/api/shorturl', function (req, res) {
   const postInput = req.body.url;
 
   if (isValidURL(postInput)) {
-    res.json({ post_url: postInput });
+    const shortLinks = await ShortenedUrl.find({});
+
+    try {
+      if (shortLinks.length > 0) {
+        // res.json({ length: shortLinks.length });
+        const lastValues = shortLinks[shortLinks.length - 1];
+        let lastInt = lastValues.short_url;
+        let newInt = lastInt + 1;
+        console.log('>> new int: ' + newInt);
+
+        const link = await ShortenedUrl.create({
+          original_url: postInput,
+          shortUrl: newInt,
+        });
+
+        try {
+          res.json({
+            original_url: link.original_url,
+            short_url: link.short_url,
+          });
+        } catch (error) {
+          res.json({ errorMessage: error });
+        }
+      } else {
+        const link = await ShortenedUrl.create({ original_url: postInput });
+
+        try {
+          res.json({
+            original_url: link.original_url,
+          });
+          link.save();
+        } catch (error) {
+          res.json({ errorMessage: error });
+        }
+      }
+    } catch (error) {
+      res.json({ errorMessage: error });
+    }
   } else {
     res.json({ error: 'invalid url' });
   }
