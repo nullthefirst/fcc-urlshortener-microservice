@@ -84,7 +84,7 @@ app.post('/api/shorturl', async function (req, res) {
         link.save(function (err) {
           if (err) res.json({ errorMessage: error });
 
-          return res.json({
+          res.json({
             original_url: link.original_url,
             short_url: link.short_url,
           });
@@ -95,7 +95,7 @@ app.post('/api/shorturl', async function (req, res) {
         link.save(function (err) {
           if (err) res.json({ errorMessage: error });
 
-          return res.json({
+          res.json({
             original_url: link.original_url,
             short_url: link.short_url,
           });
