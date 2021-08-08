@@ -109,6 +109,19 @@ app.post('/api/shorturl', async function (req, res) {
   }
 });
 
+app.get('/api/shorturl/:short_url', async function (req, res) {
+  ShortenedUrl.findOne(
+    {
+      short_url: req.params.short_url,
+    },
+    function (err, selectLink) {
+      if (err) res.json({ errorMessage: err });
+
+      res.redirect(selectLink.original_url);
+    },
+  );
+});
+
 app.listen(port, function () {
   console.log(`Listening on port ${port}`);
 });
