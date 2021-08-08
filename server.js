@@ -110,7 +110,10 @@ app.post('/api/shorturl', async function (req, res) {
 });
 
 app.get('/api/shorturl/:short_url', async function (req, res) {
-  if (req.params.short_url !== (undefined || '' || 'undefined' || null)) {
+  if (
+    !isNaN(parseInt(req.params.short_url))
+    /* verify that input is a number */
+  ) {
     ShortenedUrl.findOne(
       {
         short_url: req.params.short_url,
