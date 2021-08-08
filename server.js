@@ -58,17 +58,20 @@ app.get('/api/hello', function (req, res) {
 
 // Solutions
 app.post('/api/shorturl', async function (req, res) {
-  function isValidURL(string) {
-    // https://stackoverflow.com/a/49849482/10123365
-    var res = string.match(
-      /^((https?|ftp|smtp):\/\/)?(www.)?[a-z0-9]+(\.[a-z]{2,}){1,3}(#?\/?[a-zA-Z0-9#]+)*\/?(\?[a-zA-Z0-9-_]+=[a-zA-Z0-9-%]+&?)?$/,
-    );
-    return res !== null;
-  }
+  // function isValidURL(string) {
+  //   // https://stackoverflow.com/a/49849482/10123365
+  //   var res = string.match(
+  //     /^((https?|ftp|smtp):\/\/)?(www.)?[a-z0-9]+(\.[a-z]{2,}){1,3}(#?\/?[a-zA-Z0-9#]+)*\/?(\?[a-zA-Z0-9-_]+=[a-zA-Z0-9-%]+&?)?$/,
+  //   );
+  //   return res !== null;
+  // }
 
   const postInput = req.body.url;
+  const filteredUrl = new URL(postInput);
 
-  if (isValidURL(postInput)) {
+  if (filteredUrl.protocol !== 'http:' && filteredUrl.protocol !== 'https:') {
+    return res.json({ error: 'invalid url' });
+  } else {
     const shortLinks = await ShortenedUrl.find({});
 
     try {
@@ -104,8 +107,6 @@ app.post('/api/shorturl', async function (req, res) {
     } catch (error) {
       res.json({ errorMessage: error });
     }
-  } else {
-    res.json({ error: 'invalid url' });
   }
 });
 
