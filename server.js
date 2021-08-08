@@ -110,16 +110,20 @@ app.post('/api/shorturl', async function (req, res) {
 });
 
 app.get('/api/shorturl/:short_url', async function (req, res) {
-  ShortenedUrl.findOne(
-    {
-      short_url: req.params.short_url,
-    },
-    function (err, selectLink) {
-      if (err) res.json({ errorMessage: err });
+  if (req.params.short_url !== (undefined || '' || 'undefined' || null)) {
+    ShortenedUrl.findOne(
+      {
+        short_url: req.params.short_url,
+      },
+      function (err, selectLink) {
+        if (err) res.json({ errorMessage: err });
 
-      res.redirect(selectLink.original_url);
-    },
-  );
+        res.redirect(selectLink.original_url);
+      },
+    );
+  } else {
+    res.json({ errorMessage: 'invalid short url' });
+  }
 });
 
 app.listen(port, function () {
