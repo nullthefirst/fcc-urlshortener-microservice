@@ -73,36 +73,33 @@ app.post('/api/shorturl', async function (req, res) {
 
     try {
       if (shortLinks.length > 0) {
-        // res.json({ length: shortLinks.length });
         const lastValues = shortLinks[shortLinks.length - 1];
-        let lastInt = lastValues.short_url;
-        let newInt = lastInt + 1;
-        console.log('>> new int: ' + newInt);
+        let newInt = lastValues.short_url + 1;
 
-        const link = await ShortenedUrl.create({
+        const link = new ShortenedUrl({
           original_url: postInput,
-          shortUrl: newInt,
+          short_url: newInt,
         });
 
-        try {
+        link.save(function (err) {
+          if (err) res.json({ errorMessage: error });
+
           res.json({
             original_url: link.original_url,
             short_url: link.short_url,
           });
-        } catch (error) {
-          res.json({ errorMessage: error });
-        }
+        });
       } else {
-        const link = await ShortenedUrl.create({ original_url: postInput });
+        const link = new ShortenedUrl({ original_url: postInput });
 
-        try {
+        link.save(function (err) {
+          if (err) res.json({ errorMessage: error });
+
           res.json({
             original_url: link.original_url,
+            short_url: link.short_url,
           });
-          link.save();
-        } catch (error) {
-          res.json({ errorMessage: error });
-        }
+        });
       }
     } catch (error) {
       res.json({ errorMessage: error });
